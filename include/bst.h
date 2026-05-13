@@ -1,12 +1,9 @@
-// Copyright 2021 NNTU-CS
 #ifndef INCLUDE_BST_H_
 #define INCLUDE_BST_H_
 
-#include <iostream>
 #include <string>
 #include <algorithm>
 #include <vector>
-#include <fstream>
 
 template<typename T>
 class BST {
@@ -31,17 +28,13 @@ private:
     }
     
     Node* insert(Node* node, const T& value) {
-        if (!node) {
-            return new Node(value);
-        }
-        
-        if (value < node->key) {
+        if (!node) return new Node(value);
+        if (value < node->key)
             node->left = insert(node->left, value);
-        } else if (value > node->key) {
+        else if (value > node->key)
             node->right = insert(node->right, value);
-        } else {
+        else
             node->count++;
-        }
         return node;
     }
     
@@ -57,38 +50,27 @@ private:
         return search(node->right, value);
     }
     
-    void collectNodes(Node* node, std::vector<std::pair<T, int>>& nodes) const {
+    void collect(Node* node, std::vector<std::pair<T, int>>& vec) const {
         if (node) {
-            collectNodes(node->left, nodes);
-            nodes.push_back({node->key, node->count});
-            collectNodes(node->right, nodes);
+            collect(node->left, vec);
+            vec.push_back({node->key, node->count});
+            collect(node->right, vec);
         }
     }
     
 public:
     BST() : root(nullptr) {}
+    ~BST() { clear(root); }
     
-    ~BST() {
-        clear(root);
-    }
-    
-    void insert(const T& value) {
-        root = insert(root, value);
-    }
-    
-    int depth() const {
-        return getDepth(root);
-    }
-    
-    bool search(const T& value) const {
-        return search(root, value);
-    }
+    void insert(const T& value) { root = insert(root, value); }
+    int depth() const { return getDepth(root); }
+    bool search(const T& value) const { return search(root, value); }
     
     std::vector<std::pair<T, int>> getNodes() const {
-        std::vector<std::pair<T, int>> nodes;
-        collectNodes(root, nodes);
-        return nodes;
+        std::vector<std::pair<T, int>> vec;
+        collect(root, vec);
+        return vec;
     }
 };
 
-#endif  // INCLUDE_BST_H_
+#endif
