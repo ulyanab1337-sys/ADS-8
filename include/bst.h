@@ -48,19 +48,19 @@ template <typename T> class BST {
   }
 
   int computeHeight(Node *current) {
-    if (current == nullptr) return -1;
+    if (current == nullptr) return 0;
     int leftHeight = computeHeight(current->leftChild);
     int rightHeight = computeHeight(current->rightChild);
     return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);
   }
 
-  bool findKey(Node *current, T value) {
-    if (current == nullptr) return false;
-    if (current->info == value) return true;
+  int findCount(Node *current, T value) {
+    if (current == nullptr) return 0;
+    if (current->info == value) return current->freq;
     if (value < current->info) {
-      return findKey(current->leftChild, value);
+      return findCount(current->leftChild, value);
     } else {
-      return findKey(current->rightChild, value);
+      return findCount(current->rightChild, value);
     }
   }
 
@@ -79,7 +79,7 @@ template <typename T> class BST {
 
   int depth() { return computeHeight(top); }
 
-  bool search(T value) { return findKey(top, value); }
+  int search(T value) { return findCount(top, value); }
 
   void collectInfo(std::vector<std::pair<T, int>> &output) {
     gatherData(top, output);
