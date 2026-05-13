@@ -48,7 +48,7 @@ template <typename T> class BST {
   }
 
   int computeHeight(Node *current) {
-    if (current == nullptr) return 0;
+    if (current == nullptr) return -1;
     int leftHeight = computeHeight(current->leftChild);
     int rightHeight = computeHeight(current->rightChild);
     return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);
