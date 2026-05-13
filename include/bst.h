@@ -1,87 +1,89 @@
+// Copyright 2021 NNTU-CS
 #ifndef INCLUDE_BST_H_
 #define INCLUDE_BST_H_
 
 #include <string>
-#include <algorithm>
+#include <utility>
 #include <vector>
-#include <iostream>
 
-template<typename T>
-class BST {
+template <typename T> class BST {
  private:
-    struct Node {
-        T key;
-        int count;
-        Node* left;
-        Node* right;
-        Node(const T& k) : key(k), count(1), left(nullptr), right(nullptr) {}
-    };
+  struct Node {
+    T info;
+    int freq;
+    Node *leftChild;
+    Node *rightChild;
+  };
 
-    Node* root;
+  Node *top;
 
-    void clear(Node* node) {
-        if (node) {
-            clear(node->left);
-            clear(node->right);
-            delete node;
-        }
+  Node *createNode(T value) {
+    Node *newNode = new Node;
+    newNode->info = value;
+    newNode->freq = 1;
+    newNode->leftChild = nullptr;
+    newNode->rightChild = nullptr;
+    return newNode;
+  }
+
+  Node *attach(Node *current, T value) {
+    if (current == nullptr) {
+      return createNode(value);
     }
-
-    Node* insert(Node* node, const T& value) {
-        if (!node) return new Node(value);
-        if (value < node->key) {
-            node->left = insert(node->left, value);
-        } else if (value > node->key) {
-            node->right = insert(node->right, value);
-        } else {
-            node->count++;
-        }
-        return node;
+    if (value < current->info) {
+      current->leftChild = attach(current->leftChild, value);
+    } else if (value > current->info) {
+      current->rightChild = attach(current->rightChild, value);
+    } else {
+      current->freq++;
     }
+    return current;
+  }
 
-    int getDepth(Node* node) const {
-        if (!node) return 0;
-        int leftDepth = getDepth(node->left);
-        int rightDepth = getDepth(node->right);
-        return 1 + (leftDepth > rightDepth ? leftDepth : rightDepth);
-    }
+  void eraseAll(Node *current) {
+    if (current == nullptr) return;
+    eraseAll(current->leftChild);
+    eraseAll(current->rightChild);
+    delete current;
+  }
 
-    bool search(Node* node, const T& value) const {
-        if (!node) return false;
-        if (value == node->key) return true;
-        if (value < node->key) return search(node->left, value);
-        return search(node->right, value);
-    }
+  int computeHeight(Node *current) {
+    if (current == nullptr) return -1;
+    int leftHeight = computeHeight(current->leftChild);
+    int rightHeight = computeHeight(current->rightChild);
+    return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);
+  }
 
-    void collect(Node* node, std::vector<std::pair<T, int>>& vec) const {
-        if (node) {
-            collect(node->left, vec);
-            vec.push_back({node->key, node->count});
-            collect(node->right, vec);
-        }
+  bool findKey(Node *current, T value) {
+    if (current == nullptr) return false;
+    if (current->info == value) return true;
+    if (value < current->info) {
+      return findKey(current->leftChild, value);
+    } else {
+      return findKey(current->rightChild, value);
     }
+  }
+
+  void gatherData(Node *current, std::vector<std::pair<T, int>> &buffer) {
+    if (current == nullptr) return;
+    gatherData(current->leftChild, buffer);
+    buffer.push_back({current->info, current->freq});
+    gatherData(current->rightChild, buffer);
+  }
 
  public:
-    BST() : root(nullptr) {}
-    ~BST() { clear(root); }
+  BST() : top(nullptr) {}
+  ~BST() { eraseAll(top); }
 
-    void insert(const T& value) {
-        root = insert(root, value);
-    }
+  void insert(T value) { top = attach(top, value); }
 
-    int depth() const {
-        return getDepth(root);
-    }
+  int depth() { return computeHeight(top); }
 
-    bool search(const T& value) const {
-        return search(root, value);
-    }
+  bool search(T value) { return findKey(top, value); }
 
-    std::vector<std::pair<T, int>> getNodes() const {
-        std::vector<std::pair<T, int>> vec;
-        collect(root, vec);
-        return vec;
-    }
+  void collectInfo(std::vector<std::pair<T, int>> &output) {
+    gatherData(top, output);
+  }
 };
 
-#endif
+#endif  // INCLUDE_BST_H_
