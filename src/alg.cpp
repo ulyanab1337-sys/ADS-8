@@ -1,45 +1,72 @@
-#include <fstream>
-#include <cctype>
+// Copyright 2021 NNTU-CS
 #include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 #include "bst.h"
 
-void makeTree(BST<std::string>& tree, const char* filename) {
-    std::ifstream file(filename);
-    if (!file) return;
-
-    std::string word;
-    char ch;
-
-    while (file.get(ch)) {
-        if (std::isalpha(static_cast<unsigned char>(ch))) {
-            word += std::tolower(static_cast<unsigned char>(ch));
-        } else {
-            if (!word.empty()) {
-                tree.insert(word);
-                word.clear();
-            }
-        }
-    }
-    if (!word.empty()) tree.insert(word);
-    file.close();
+bool isEnglishLetter(char symbol) {
+  return (symbol >= 'a' && symbol <= 'z') || (symbol >= 'A' && symbol <= 'Z');
 }
 
-void printFreq(BST<std::string>& tree) {
-    auto nodes = tree.getNodes();
+char convertToLower(char symbol) {
+  if (symbol >= 'A' && symbol <= 'Z') {
+    return symbol + ('a' - 'A');
+  }
+  return symbol;
+}
 
-    std::sort(nodes.begin(), nodes.end(),
-              [](const auto& a, const auto& b) {
-                  if (a.second != b.second) return a.second > b.second;
-                  return a.first < b.first;
-              });
+void makeTree(BST<std::string> &container, const char *source) {
+  std::ifstream input(source);
 
-    std::ofstream out("result/freq.txt");
+  if (!input.is_open()) {
+    std::cerr << "Cannot open file" << std::endl;
+    return;
+  }
 
-    for (const auto& node : nodes) {
-        std::cout << node.first << ": " << node.second << std::endl;
-        out << node.first << ": " << node.second << std::endl;
+  std::string buffer;
+  char currentChar;
+
+  while (input.get(currentChar)) {
+    if (isEnglishLetter(currentChar)) {
+      buffer.push_back(convertToLower(currentChar));
+    } else {
+      if (!buffer.empty()) {
+        container.insert(buffer);
+        buffer.clear();
+      }
     }
-    out.close();
+  }
+
+  if (!buffer.empty()) {
+    container.insert(buffer);
+  }
+
+  input.close();
+}
+
+bool sortByFrequency(const std::pair<std::string, int> &first,
+                     const std::pair<std::string, int> &second) {
+  return first.second > second.second;
+}
+
+void printFreq(BST<std::string> &vocabulary) {
+  std::vector<std::pair<std::string, int>> items;
+  vocabulary.collectInfo(items);
+
+  std::sort(items.begin(), items.end(), sortByFrequency);
+
+  std::ofstream output("result/freq.txt");
+
+  for (const auto &entry : items) {
+    std::cout << entry.first << " - " << entry.second << std::endl;
+    if (output.is_open()) {
+      output << entry.first << " - " << entry.second << std::endl;
+    }
+  }
+
+  output.close();
 }
