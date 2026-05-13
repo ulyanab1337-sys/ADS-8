@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <iostream>
 
 template<typename T>
 class BST {
@@ -13,8 +14,7 @@ class BST {
         int count;
         Node* left;
         Node* right;
-
-        explicit Node(const T& k) : key(k), count(1), left(nullptr), right(nullptr) {}
+        Node(const T& k) : key(k), count(1), left(nullptr), right(nullptr) {}
     };
 
     Node* root;
@@ -41,7 +41,9 @@ class BST {
 
     int getDepth(Node* node) const {
         if (!node) return 0;
-        return 1 + std::max(getDepth(node->left), getDepth(node->right));
+        int leftDepth = getDepth(node->left);
+        int rightDepth = getDepth(node->right);
+        return 1 + (leftDepth > rightDepth ? leftDepth : rightDepth);
     }
 
     bool search(Node* node, const T& value) const {
@@ -63,9 +65,17 @@ class BST {
     BST() : root(nullptr) {}
     ~BST() { clear(root); }
 
-    void insert(const T& value) { root = insert(root, value); }
-    int depth() const { return getDepth(root); }
-    bool search(const T& value) const { return search(root, value); }
+    void insert(const T& value) {
+        root = insert(root, value);
+    }
+
+    int depth() const {
+        return getDepth(root);
+    }
+
+    bool search(const T& value) const {
+        return search(root, value);
+    }
 
     std::vector<std::pair<T, int>> getNodes() const {
         std::vector<std::pair<T, int>> vec;
@@ -74,4 +84,4 @@ class BST {
     }
 };
 
-#endif  // INCLUDE_BST_H_
+#endif
